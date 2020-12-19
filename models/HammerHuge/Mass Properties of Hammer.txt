@@ -1,0 +1,32 @@
+Mass properties of HAMMER0001
+     Configuration: GES No
+     Coordinate system: -- default --
+
+Mass = 1963 grams
+
+Volume = 495329 cubic millimeters
+
+Surface area = 74454  square millimeters
+
+Center of mass: ( millimeters )
+	X = 0
+	Y = 16
+	Z = -15
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0,  1,  0)   	Px = 4247832
+	 Iy = ( 0,  0,  1)   	Py = 6084733
+	 Iz = ( 1,  0,  0)   	Pz = 9404805
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 9404781	Lxy = -8831	Lxz = -3898
+	Lyx = -8831	Lyy = 4580085	Lyz = -707048
+	Lzx = -3898	Lzy = -707048	Lzz = 5752504
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 10314805	Ixy = -10941	Ixz = -1899
+	Iyx = -10941	Iyy = 5010482	Iyz = -1161393
+	Izx = -1899	Izy = -1161393	Izz = 6232149

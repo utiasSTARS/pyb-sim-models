@@ -1,0 +1,34 @@
+Mass properties of Hammer tail
+     Configuration: GES No
+     Coordinate system: -- default --
+
+Density = 0 grams per cubic millimeter
+
+Mass = 130 grams
+
+Volume = 266308 cubic millimeters
+
+Surface area = 38834  square millimeters
+
+Center of mass: ( millimeters )
+	X = 0
+	Y = 0
+	Z = -184
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0,  0,  1)   	Px = 19811
+	 Iy = ( 1,  0,  0)   	Py = 1392773
+	 Iz = ( 0,  1,  0)   	Pz = 1403771
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 1392773	Lxy = 0	Lxz = 0
+	Lyx = 0	Lyy = 1403771	Lyz = 0
+	Lzx = 0	Lzy = 0	Lzz = 19811
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 5809967	Ixy = 0	Ixz = 0
+	Iyx = 0	Iyy = 5820965	Iyz = 0
+	Izx = 0	Izy = 0	Izz = 19811

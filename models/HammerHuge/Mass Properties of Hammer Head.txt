@@ -1,0 +1,34 @@
+Mass properties of Hammer Head
+     Configuration: GES No
+     Coordinate system: -- default --
+
+Density = 0 grams per cubic millimeter
+
+Mass = 1832 grams
+
+Volume = 229021 cubic millimeters
+
+Surface area = 35620  square millimeters
+
+Center of mass: ( millimeters )
+	X = 0
+	Y = 16
+	Z = -5
+
+Principal axes of inertia and principal moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass.
+	 Ix = ( 0,  1,  0)   	Px = 678706
+	 Iy = (-1,  0,  0)   	Py = 5594506
+	 Iz = ( 0,  0,  1)   	Pz = 5834889
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the center of mass and aligned with the output coordinate system.
+	Lxx = 5594554	Lxy = -8825	Lxz = -2637
+	Lyx = -8825	Lyy = 780911	Lyz = -718652
+	Lzx = -2637	Lzy = -718652	Lzz = 5732637
+
+Moments of inertia: ( grams *  square millimeters )
+Taken at the output coordinate system.
+	Ixx = 6099577	Ixy = -10941	Ixz = -1900
+	Iyx = -10941	Iyy = 835613	Iyz = -875590
+	Izx = -1900	Izy = -875590	Izz = 6182978

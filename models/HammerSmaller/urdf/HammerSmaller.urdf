@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="HammerSmaller">
+  <link name="handle">
+    <inertial>
+      <origin
+        xyz="-1.2327E-08 -1.477E-09 -0.08839"
+        rpy="0 0 0" />
+      <mass
+        value="0.044636" />
+      <inertia
+        ixx="0.00015733"
+        ixy="8.4377E-12"
+        ixz="-6.4876E-11"
+        iyy="0.00015793"
+        iyz="-7.361E-12"
+        izz="2.1057E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://HammerSmaller/meshes/handle.stl" />
+      </geometry>
+      <material name="brown">
+        <color rgba="0.8 0.4 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://HammerSmaller/meshes/handle.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="head">
+    <inertial>
+      <origin
+        xyz="-0.0059764 -9.7557E-07 -0.23599"
+        rpy="0 0 0" />
+      <mass
+        value="0.11353" />
+      <inertia
+        ixx="5.5211E-06"
+        ixy="7.112E-10"
+        ixz="1.1552E-10"
+        iyy="4.736E-05"
+        iyz="5.0227E-11"
+        izz="4.7564E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://HammerSmaller/meshes/head.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.77647 0.75686 0.73725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://HammerSmaller/meshes/head.stl" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Handle_to_head"
+    type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="handle" />
+    <child
+      link="head" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+</robot>

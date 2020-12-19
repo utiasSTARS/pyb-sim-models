@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot name="hammer">
+    <link name="handle">
+        <inertial>
+          <!-- Needs to be specified in Kg -->
+          <mass value="0.130"/>
+          <!-- Center of gravity and inertial reference frame 
+                relative to the link's reference frame. -->
+          <origin rpy="0 0 0" xyz="0 0 0.184"/>
+          <!-- Needs to be specified in Kg/m^2 -->
+          <inertia ixx="0.038541666666666675" ixy="0" ixz="0" iyy="0.010833333333333334" iyz="0" izz="0.04270833333333334"/>
+        </inertial>
+        <collision>
+          <geometry>
+            <mesh filename="package://Hammer/meshes/Hammer_Handle.stl" scale="0.001 0.001 0.001"/>
+          </geometry>
+        </collision>
+    </link>
+  
+    <link name="head">
+        <inertial>
+          <mass value="0.1"/>
+          <!-- Center of gravity and inertial reference frame -->
+          <origin rpy="-1.7 0 0" xyz="0 0.0 0.025"/>
+          <inertia ixx="0.038541666666666675" ixy="0" ixz="0" iyy="0.010833333333333334" iyz="0" izz="0.04270833333333334"/>
+        </inertial>
+        <collision>
+          <geometry>
+            <mesh filename="package://Hammer/meshes/Hammer_Head.stl" scale="0.001 0.001 0.001"/>
+          </geometry>
+        </collision>
+    </link>
+  
+    <joint name="handle_head" type="fixed">
+        <parent link="handle"/>
+        <child link="head"/>
+    </joint>
+  
+</robot>
+

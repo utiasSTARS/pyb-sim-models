@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot name="Robotiq_2F85" xmlns:xacro="http://ros.org/wiki/xacro" >
+
+	<!-- On the first day, Darwin created the world -->
+    <link name="world"/>
+
+
+	<!-- Add Robotiq 2f-85 gripper -->
+    <xacro:include filename="./robotiq_2f_model/robotiq_2f_85.urdf.xacro" />
+	<xacro:robotiq_2f_85 parent="world" name="gripper" precise_collision="true" adaptive_transmission="true" with_pads="true" >
+		<origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
+	</xacro:robotiq_2f_85>
+
+
+</robot>
+
