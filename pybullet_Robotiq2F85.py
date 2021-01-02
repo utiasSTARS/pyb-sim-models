@@ -34,7 +34,7 @@ class Robotiq2F85:
         self.USE_SINGLE_ACTUATOR = False
 
         #We need to add a constraint for each finger of the gripper to close the kinematic loop.
-        #The conmstraint is specified relative to the Center of Mass of the link. The CAD can be used
+        #The constraint is specified relative to the Center of Mass of the link. The CAD can be used
         #to locate the joint relative to the center of mass.
         right_follower_index   = self.getJointIndexFromName('gripper_right_follower_joint')
         right_springlink_index = self.getJointIndexFromName('gripper_right_spring_link_joint')

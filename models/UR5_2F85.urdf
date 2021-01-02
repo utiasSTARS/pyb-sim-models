@@ -568,8 +568,8 @@
   <!-- Add a Tool Center Point reference as a convenience.
          The TCP is at 18.75mm from the tip of the gripper as its located in
          the middle of the pad. As a result, if the TCP is at 18.75mm above the floor,
-          it means that the gripper touches the floor. If you want the TCP to
-          be located at the tip of the gripper, use 0.14948 instead of 0.13073 -->
+         it means that the gripper touches the floor. If you want the TCP to
+         be located at the tip of the gripper, use 0.14948 instead of 0.13073 -->
   <joint name="tool_center_point" type="fixed">
     <origin rpy="1.5707963267948966 1.5707963267948966 0" xyz="0 -0.14948 0"/>
     <parent link="gripper_base"/>

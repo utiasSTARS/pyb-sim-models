@@ -6,7 +6,6 @@
 
 	<!-- Add Robotiq 2f-85 gripper -->
     <xacro:include filename="./Robotiq_2F85/urdf/Robotiq_2F85.urdf.xacro" />
-    
 	<xacro:Robotiq_2F85 parent="world" name="gripper" enable_underactuation="true" soft_pads="false" softness="10" >
 		<origin xyz="0 0 0" rpy="0 0 0"/>
 	</xacro:Robotiq_2F85>
