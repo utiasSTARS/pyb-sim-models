@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-project(Assembled_Volumes_URDF)
+project(Robotiq_2F85)
 
 find_package(catkin REQUIRED)
 
