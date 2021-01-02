@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot name="starsthing" xmlns:xacro="http://ros.org/wiki/xacro" >
+<robot name="UR5_2F85" xmlns:xacro="http://ros.org/wiki/xacro" >
 
 	<!-- On the first day, Darwin created the world -->
     <link name="world"/>
@@ -23,13 +23,23 @@
     		wrist_3_lower_limit="${-2*pi}" wrist_3_upper_limit="${2*pi}"
   	/>
 
-
 	<!-- Add Robotiq 2f-85 gripper -->
-    <xacro:include filename="./robotiq_2f_model/robotiq_2f_85.urdf.xacro" />
-	<xacro:robotiq_2f_85 parent="ee_link" name="gripper" precise_collision="true" adaptive_transmission="true" with_pads="true" >
-		<origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
-	</xacro:robotiq_2f_85>
+    <xacro:include filename="./Robotiq_2F85/urdf/Robotiq_2F85.urdf.xacro" />
+	<xacro:Robotiq_2F85 parent="ee_link" name="gripper" enable_underactuation="true" soft_pads="true" softness="5" >
+		<origin xyz="0 0 0" rpy="0 0 ${pi/2}"/>
+	</xacro:Robotiq_2F85>
 
+    <!-- Add a Tool Center Point reference as a convenience.
+         The TCP is at 18.75mm from the tip of the gripper as its located in
+         the middle of the pad. As a result, if the TCP is at 18.75mm above the floor,
+         it means that the gripper touches the floor. If you want the TCP to
+         be located at the tip of the gripper, use 0.14948 instead of 0.13073 -->
+    <joint name="tool_center_point" type="fixed">
+        <origin rpy="${pi/2} ${pi/2} 0" xyz="0 -0.14948 0"/>
+        <parent link="gripper_base"/>
+        <child link="tcp"/>
+    </joint>
+    <link name="tcp" />
 
 </robot>
 

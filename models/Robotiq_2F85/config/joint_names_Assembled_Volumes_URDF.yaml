@@ -1,0 +1,1 @@
+controller_joint_names: ['', 'right_spring_link_joint', 'left_spring_link_joint', 'right_driver_joint', 'right_coupler_joint', 'right_follower_joint', 'left_driver_joint', 'left_coupler_joint', 'left_follower_joint', ]

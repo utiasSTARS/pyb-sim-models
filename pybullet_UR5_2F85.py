@@ -44,7 +44,6 @@ class UR5_2F85:
         arm_error       = self.ur5.getStateError(arm_joint_positions_goal)
         gripper_error   = self.Rob2f85.getStateError(gripper_joint_positions_goal)
         state_error     = np.linalg.norm([arm_error, gripper_error])
-        print(state_error)
         return  state_error
 
     #Given the current joints positions and a relative joints motion provided in relative_joints
@@ -86,7 +85,7 @@ class UR5_2F85:
                 #If the goal is expressed as 2 terms, then it means that the goal is expressing relative joint positions
                 #If the goal is expressed as 8 terms, then it means that the goal is expressing absolute joint positions
                 if len(current_goal) == 4:
-                    self.arm_joint_positions_goal = p.calculateInverseKinematics(bodyUniqueId=self.getUID(), endEffectorLinkIndex=self.ur5.getJointIndexFromName('ee_link-tool0'), 
+                    self.arm_joint_positions_goal = p.calculateInverseKinematics(bodyUniqueId=self.getUID(), endEffectorLinkIndex=self.ur5.getJointIndexFromName('tool_center_point'), 
                                                                                 targetPosition=current_goal[0], targetOrientation=current_goal[1],
                                                                                 residualThreshold=0.001, maxNumIterations=100)
                     self.gripper_joint_positions_goal   = current_goal[2:4]
@@ -104,7 +103,7 @@ class UR5_2F85:
         except AttributeError:
             #Compute the joints positions goals from the cartesian goal
             current_goal                  = self.robotGoalsSequence[self.robotGoalsSequenceIndex]
-            self.arm_joint_positions_goal = p.calculateInverseKinematics(bodyUniqueId=self.getUID(), endEffectorLinkIndex=self.ur5.getJointIndexFromName('ee_link-tool0'), 
+            self.arm_joint_positions_goal = p.calculateInverseKinematics(bodyUniqueId=self.getUID(), endEffectorLinkIndex=self.ur5.getJointIndexFromName('tool_center_point'), 
                                                                         targetPosition=current_goal[0], targetOrientation=current_goal[1],
                                                                         residualThreshold=0.001, maxNumIterations=100)
             self.gripper_joint_positions_goal = [current_goal[2], current_goal[3]]

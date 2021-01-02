@@ -22,72 +22,83 @@ class Robotiq2F85:
         if robotUID == None:
             startPos         = startingPosition
             startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
-            self.gripper     = [p.loadURDF("./models/2F85.urdf",startPos, startOrientation)]
+            self.gripper     = [p.loadURDF("./models/Robotiq_2F85.urdf",startPos, startOrientation)]
         else:
             self.gripper = [robotUID]
 
         #Maximum closing of the gripper
-        self.MAX_CLOSING = 0.7
+        self.MAX_CLOSING = np.deg2rad(45)
         #Maximum force of the gripper
         self.MAX_FORCE   = 10
+        #Use a single actuator with gears
+        self.USE_SINGLE_ACTUATOR = False
 
         #We need to add a constraint for each finger of the gripper to close the kinematic loop.
+        #The conmstraint is specified relative to the Center of Mass of the link. The CAD can be used
+        #to locate the joint relative to the center of mass.
         right_follower_index   = self.getJointIndexFromName('gripper_right_follower_joint')
         right_springlink_index = self.getJointIndexFromName('gripper_right_spring_link_joint')
-        right_constraint = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=right_follower_index, 
+        c = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=right_follower_index, 
             childBodyUniqueId=self.getUID(), childLinkIndex=right_springlink_index, 
-            jointType=p.JOINT_POINT2POINT, jointAxis=[1, 0, 0], parentFramePosition=[0, 0/1000, -15/1000], childFramePosition=[0, -2/1000, 32/1000])
+            jointType=p.JOINT_POINT2POINT, jointAxis=[1, 0, 0], parentFramePosition=[6/1000,-6.7/1000,0], childFramePosition=[0,28.9/1000,0])
         #Make the constraint very strong so an actuation cannot separate the links
         #For details about ERP: https://raw.githubusercontent.com/bulletphysics/bullet3/master/examples/Utils/b3ERPCFMHelper.hpp
-        p.changeConstraint(right_constraint, maxForce=9999, erp=0.8)
+        p.changeConstraint(c, maxForce=9999, erp=0.8)
 
         left_follower_index   = self.getJointIndexFromName('gripper_left_follower_joint')
         left_springlink_index = self.getJointIndexFromName('gripper_left_spring_link_joint')
-        left_constraint = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=left_follower_index, 
+        c = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=left_follower_index, 
             childBodyUniqueId=self.getUID(), childLinkIndex=left_springlink_index, 
-            jointType=p.JOINT_POINT2POINT, jointAxis=[1, 0, 0], parentFramePosition=[0, 0/1000, -15/1000], childFramePosition=[0, -2/1000, 32/1000])
+            jointType=p.JOINT_POINT2POINT, jointAxis=[1, 0, 0], parentFramePosition=[6/1000,-6.7/1000,0], childFramePosition=[0,28.9/1000,0])
         #Make the constraint very strong so an actuation cannot separate the links
-        p.changeConstraint(left_constraint, maxForce=9999, erp=0.8)
+        p.changeConstraint(c, maxForce=9999, erp=0.8)
 
         #There is a pin fixed on the driver link which limits the movement of the coupler link. If we dont use self-collision (for performances and stability purposes)
-        #then we need to make sure that the coupler does not move through the pin. We can do that by limiting the rotation of the coupler/driver joint.
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_coupler_joint'), 
-                        jointLowerLimit=np.deg2rad(-90) , jointUpperLimit=0)
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_coupler_joint'),  
-                        jointLowerLimit=np.deg2rad(-90) , jointUpperLimit=0)
+        #then we need to make sure that the coupler does not move through the pin. We can do that by limiting the rotation of the coupler/driver joint. This constraint
+        #is implemented in the URDF but is respected ONLY IF its also implemented here. Try commenting out the two following lines to test it.
+        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_coupler_joint'), jointLowerLimit=0.13 , jointUpperLimit=0.79)
+        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_coupler_joint'),  jointLowerLimit=0.13 , jointUpperLimit=0.79)
 
-        #The spring links must not travel too far or they may collide with each other.
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'), 
-                        jointLowerLimit=np.deg2rad(-45) , jointUpperLimit=0, jointDamping=0.5)
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'),  
-                        jointLowerLimit=0 , jointUpperLimit=np.deg2rad(45), jointDamping=0.5)
+        #A JOINT_GEAR can be used to actuate the left finger when the right one is actuated but external forcces
+        #can break the symmetry so its better to use two separate actuators instead.
+        if self.USE_SINGLE_ACTUATOR == True:
+            right_driver_joint_index   = self.getJointIndexFromName('gripper_right_driver_joint')
+            left_driver_joint_index    = self.getJointIndexFromName('gripper_left_driver_joint')
+            #A JOINT_GEAR is unidirectional so two constraints needs to be added to have the real gear behaviour
+            c = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=right_driver_joint_index, 
+                childBodyUniqueId=self.getUID(), childLinkIndex=left_driver_joint_index,  jointType=p.JOINT_GEAR, 
+                jointAxis=[0,0,1], parentFramePosition=[0,0,0], childFramePosition=[0,0,0])
+            p.changeConstraint(c, gearRatio=-1, maxForce=self.MAX_FORCE)
+            c = p.createConstraint(parentBodyUniqueId=self.getUID(), parentLinkIndex=left_driver_joint_index, 
+                childBodyUniqueId=self.getUID(), childLinkIndex=right_driver_joint_index,  jointType=p.JOINT_GEAR, 
+                jointAxis=[0,0,1], parentFramePosition=[0,0,0], childFramePosition=[0,0,0])
+            p.changeConstraint(c, gearRatio=-1, maxForce=self.MAX_FORCE)
 
         # WATCH OUT!!! In PyBullet, all revolute and slider joints have active motors by default. This does not work well for an underactuated mechanism.
         # Therefore, we need to disable some of them by setting a maximal force to 0 and allowing a full 360 degres rotation
         p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_follower_joint'), controlMode=p.VELOCITY_CONTROL, force=0)
         p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_follower_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_follower_joint'), jointLowerLimit=np.deg2rad(-360), jointUpperLimit=np.deg2rad(360))
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_follower_joint'),  jointLowerLimit=np.deg2rad(-360), jointUpperLimit=np.deg2rad(360))
-
-
-        #The mass and inertia of the links are grossly inaccurate in most (all?) models available online.
-        #But the impact of these values on the simulation can be very important.
+        p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_spring_link_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
+        p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
+        p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_coupler_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
+        p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_coupler_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
+        
+        #If the left finger is driven by the right one, the left driver must not be motorized
+        if self.USE_SINGLE_ACTUATOR == True:
+            p.setJointMotorControl2(bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_driver_joint'),  controlMode=p.VELOCITY_CONTROL, force=0)
+ 
+        #The mass and inertia of the links are grossly inaccurate in most (all?) models available online but the impact of these values on the simulation can be very important.
         #The following values were obtained from the CAD supplied by Robotiq using the anodized aluminum 6061 T6 with mass density = 0.0027 Kg/cm^3
         #PyBullet/URDF uses Mass specified in Kg and inertia in Kg/m^2
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'), mass=29.95/1000, localInertiaDiagonal=[50.79/10 ,107.07/10 ,151.03/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_driver_joint'),      mass=18.49/1000, localInertiaDiagonal=[6.64/10  ,34.75/10  ,37.50/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_coupler_joint'),     mass=27.31/1000, localInertiaDiagonal=[22.27/10 ,69.13/10  ,85.40/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_follower_joint'),    mass=19.55/1000, localInertiaDiagonal=[9.98/10  ,42.82/10  ,45.92/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_right_pad_joint'),         mass=15.55/1000, localInertiaDiagonal=[6.01/10  ,17.63/10  ,21.98/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_spring_link_joint'),  mass=29.95/1000, localInertiaDiagonal=[50.79/10 ,107.07/10 ,151.03/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_driver_joint'),       mass=18.49/1000, localInertiaDiagonal=[6.64/10  ,34.75/10  ,37.50/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_coupler_joint'),      mass=27.31/1000, localInertiaDiagonal=[22.27/10 ,69.13/10  ,85.40/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_follower_joint'),     mass=19.55/1000, localInertiaDiagonal=[9.98/10  ,42.82/10  ,45.92/10 ])
-        p.changeDynamics(bodyUniqueId=self.getUID(), linkIndex=self.getJointIndexFromName('gripper_left_pad_joint'),          mass=15.55/1000, localInertiaDiagonal=[6.01/10  ,17.63/10  ,21.98/10 ])
+            #The right inertial parameters are now implemented in the URDF
 
         #Initialize the state of the gripper to fully open
         p.resetJointState(bodyUniqueId=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_driver_joint'), targetValue=0)
         p.resetJointState(bodyUniqueId=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_driver_joint'),  targetValue=0)
+
+    #Use a single actuator with gears instead of two independant actuators
+    def useSingleActuator(self, useSingle):
+        self.USE_SINGLE_ACTUATOR = useSingle
 
     def setMaxForce(self, max_force):
         self.MAX_FORCE = max_force
@@ -106,6 +117,11 @@ class Robotiq2F85:
                                     p.getJointState(bodyUniqueId=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_driver_joint'))[0] ]
         return current_joint_position
 
+    def getCouplerState(self):
+        current_joint_position = [  p.getJointState(bodyUniqueId=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_coupler_joint'))[0],
+                                    p.getJointState(bodyUniqueId=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_coupler_joint'))[0] ]
+        return current_joint_position
+
     #Returns joints position error from goal position
     def getStateError(self, gripper_joint_positions_goal):
         g = gripper_joint_positions_goal
@@ -120,17 +136,17 @@ class Robotiq2F85:
     #Uses position control to actuate each driver joint of the gripper
     #Each of left_finger_goal, right_finger_goal is a percentage that specify how close each finger is (100 = Fully closed, 0 = Fully open)
     def setGoal(self, left_finger_goal, right_finger_goal):
-        #All the values here takes a lot of time to tune...modify them at your own risk.
         
         right_finger_goal = max(min(right_finger_goal,100),0)
         left_finger_goal  = max(min(left_finger_goal,100),0)
 
-        p.setJointMotorControl2(targetPosition=right_finger_goal*self.MAX_CLOSING/100, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_driver_joint'), controlMode=p.POSITION_CONTROL, maxVelocity=1)
-        p.setJointMotorControl2(targetPosition=left_finger_goal*self.MAX_CLOSING/100,  bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_driver_joint'),  controlMode=p.POSITION_CONTROL, maxVelocity=1)
+        p.setJointMotorControl2(targetPosition=right_finger_goal*self.MAX_CLOSING/100, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_driver_joint'), controlMode=p.POSITION_CONTROL, maxVelocity=1, force=self.MAX_FORCE)
+        if self.USE_SINGLE_ACTUATOR == False:
+            p.setJointMotorControl2(targetPosition=left_finger_goal*self.MAX_CLOSING/100,  bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_driver_joint'),  controlMode=p.POSITION_CONTROL, maxVelocity=1, force=self.MAX_FORCE)
         
         #Acts as the spring in the gripper that keeps the pads parallel
-        p.setJointMotorControl2(targetPosition=self.MAX_CLOSING, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'), controlMode=p.POSITION_CONTROL, force=10)
-        p.setJointMotorControl2(targetPosition=self.MAX_CLOSING, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_spring_link_joint'),  controlMode=p.POSITION_CONTROL, force=10) 
+        p.setJointMotorControl2(targetPosition=self.MAX_CLOSING, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_right_spring_link_joint'), controlMode=p.POSITION_CONTROL, force=1)
+        p.setJointMotorControl2(targetPosition=-1*self.MAX_CLOSING, bodyIndex=self.getUID(), jointIndex=self.getJointIndexFromName('gripper_left_spring_link_joint'),  controlMode=p.POSITION_CONTROL, force=1) 
 
     #Build a dictionnary that can then be used to efficiently retrieve
     #joints unique IDs from their names.

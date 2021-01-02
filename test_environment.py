@@ -37,7 +37,7 @@ p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 0)
 #Instanciate the UR5 only
 #arm = UR5(cid)
 #or instanciate the 2F85 only
-#gripper = Robotiq2F85(cid, startingOrientationRAD=[0,np.deg2rad(-90),0])
+#gripper = Robotiq2F85(cid, startingOrientationRAD=[np.deg2rad(-90),0,0])
 #or instanciate a UR5 equipped with a 2F85
 robot = UR5_2F85(cid)
 
@@ -66,16 +66,17 @@ hammerId = p.loadURDF("./models/HammerSmaller/urdf/HammerSmaller.urdf", [0.35,0,
 p.changeDynamics(hammerId,-1,lateralFriction=1, spinningFriction=1)
 
 #Perform a sequence
-robot.addGoal([(0.45,0,0.1),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),0,0])         #Above the hammer
-robot.addGoal([(0.45,0,0.01),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),0,0])        #Pre-grasp
-robot.addGoal([(0.45,0,0.01),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),100,100])    #Grasp
-robot.addGoal([(0.45,0,0.2),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),100,100])     #Lift up
+robot.addGoal([(0.45,0,0.1),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),0,0])       #Above the hammer
+robot.addGoal([(0.45,0,0.02),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),0,0])      #Pre-grasp
+robot.addGoal([(0.45,0,0.02),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),83,83])    #Grasp
+robot.addGoal([(0.45,0,0.2),p.getQuaternionFromEuler([0,np.deg2rad(-180),0]),83,83])     #Lift up
 robot.addGoal([(0,0,0,0,np.deg2rad(-30),0),(0,0)])  # Move wrist (Relative joint movement)
 robot.addGoal([(0,0,0,0,np.deg2rad(+60),0),(0,0)])  # Move wrist (Relative joint movement)
 robot.addGoal([(0,0,0,0,np.deg2rad(-30),0),(0,0)])  # Move wrist (Relative joint movement)
 robot.addGoal([(0,0,0,np.deg2rad(-30),0,0),(0,0)])  # Move wrist (Relative joint movement)
 robot.addGoal([(0,0,0,np.deg2rad(+60),0,0),(0,0)])  # Move wrist (Relative joint movement)
 robot.addGoal([(0,0,0,np.deg2rad(-30),0,0),(0,0)])  # Move wrist (Relative joint movement)
+
 
 #Run the simulator
 for i in range(8000):    
