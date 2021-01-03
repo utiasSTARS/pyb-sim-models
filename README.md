@@ -2,9 +2,52 @@
 A repository of realistic simulation models.
 
 To test, run:
-```
+```bash
 python3 test_environment.py
 ```
+
+To build the URDF for the UR5+2F85, use:
+```bash
+xacro models/UR5_2F85_BuildURDF.xacro > models/UR5_2F85.urdf
+```
+
+Prerequisites:
+- [Python > 3.6](https://www.python.org/downloads/)
+- [PyBullet](https://github.com/bulletphysics/bullet3)
+- [Numpy](https://numpy.org/install/)
+- [xacro](http://wiki.ros.org/xacro) (usually installed with [ROS](https://wiki.ros.org/ROS/Installation))
+
+
+# Basic Usage
+This package provides XACRO files used to generate URDF files. As a convenience, pre-generated URDFs are also included but you will probably want to generate your own URDF after having modified the parameters in the XACROs. 
+
+The main parameters that you might want to modify are:
+```xml
+<xacro:ur5_robot prefix="" joint_limited="true" ...
+```
+- ur5_robot prefix : Needed if you simulate more than one UR5 in the same environment
+- ur5_robot joint_limited : Can be useful to help with the motion plannning.
+```xml
+<xacro:Robotiq_2F85 parent="ee_link" name="gripper" enable_underactuation="true" soft_pads="true" softness="5" > ...
+```
+- Robotiq_2F85 name : Prefix of the gripper
+- Robotiq_2F85 enable_underactuation : Set to ```false``` if you want to force pads to stay parallel at all times.
+- Robotiq_2F85 soft_pads : Set to ```true``` if you want to simulate the compliance of the pads (not realistic).
+- Robotiq_2F85 softness : Used to modulate the amount of compliance for the pads. Used only if ```soft_pads="true"```.
+
+Finally, a Tool Center Point (TCP) is provided in the UR5+2F85 model as a convenience. This TCP is useful if you want to move the robot such that the end-effector reaches a position in a specific orientation (inverse kinematics problem). The position and orientation of the TCP is defined relative to the base of the 2F85 gripper. The distance between the origin of the base of the gripper and the middle of the pads when the gripper is closed is 130.73mm while the distance to the tip of the pads is 149.48mm. You can modify the position of the TCP depending on how you want to plan the motions of the robot.
+
+```xml
+<joint name="tool_center_point" type="fixed">
+    <origin rpy="${pi/2} ${pi/2} 0" xyz="0 -0.14948 0"/>
+    <parent link="gripper_base"/>
+    <child link="tcp"/>
+</joint>
+<link name="tcp" />
+```
+
+# Universal Robot UR-5 Model
+This model is a very slightly modified version of the model produced by the manufacturer (see [here](https://github.com/ros-industrial/universal_robot)). The only modifications made to the XACRO file provided by the package are to disable certain features specifically made for ROS or Gazebo.
 
 # Robotiq 2F-85 Model
 Although the gripper is heavily used in academia and industry, nearly all simulation models for this gripper that are available online are wrong or simply not working. This work tries to fill the gap by providing the community with a realistic model of the gripper.
