@@ -17,6 +17,9 @@ Prerequisites:
 - [Numpy](https://numpy.org/install/)
 - [xacro](http://wiki.ros.org/xacro) (usually installed with [ROS](https://wiki.ros.org/ROS/Installation))
 
+And the result should look like this:
+
+![pyb-sim-models_GIF](https://user-images.githubusercontent.com/10478385/104060368-c7a74480-51c4-11eb-961f-cb820409438c.gif)
 
 # Basic Usage
 This package provides XACRO files used to generate URDF files. As a convenience, pre-generated URDFs are also included but you will probably want to generate your own URDF after having modified the parameters in the XACROs. 
