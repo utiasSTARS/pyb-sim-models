@@ -4,6 +4,7 @@ MIN_PYTHON = (3, 8)
 if sys.version_info < MIN_PYTHON:
     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
 
+import os
 import logging
 import numpy as np
 import pybullet as p
@@ -16,7 +17,10 @@ class UR5:
         if robotUID == None:
             startPos  = startingPosition
             startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
-            self.arm = [p.loadURDF("./models/UR5.urdf",startPos, startOrientation)]
+            
+            dirname  = os.path.dirname(__file__)
+            filename = os.path.join(dirname, 'models/UR5.urdf')
+            self.arm = [p.loadURDF(filename,startPos, startOrientation)]
         else:
             self.arm = [robotUID]
 

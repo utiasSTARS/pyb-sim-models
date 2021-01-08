@@ -4,7 +4,7 @@ MIN_PYTHON = (3, 8)
 if sys.version_info < MIN_PYTHON:
     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
 
-import logging
+import os
 import numpy as np
 import pybullet as p
 from pybullet_UR5 import UR5
@@ -15,7 +15,10 @@ class UR5_2F85:
         self._cid = simulatorConnectionID
         startPos  = startingPosition
         startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
-        self.robot = [p.loadURDF("./models/UR5_2F85.urdf",startPos, startOrientation)]
+
+        dirname  = os.path.dirname(__file__)
+        filename = os.path.join(dirname, 'models/UR5_2F85.urdf')
+        self.robot = [p.loadURDF(filename,startPos, startOrientation)]
 
         self.ur5     = UR5(self._cid, robotUID=self.getUID())
         self.Rob2f85 = Robotiq2F85(self._cid, robotUID=self.getUID())

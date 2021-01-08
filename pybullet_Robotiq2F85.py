@@ -4,7 +4,7 @@ MIN_PYTHON = (3, 8)
 if sys.version_info < MIN_PYTHON:
     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
 
-import logging
+import os
 import numpy as np
 import pybullet as p
 
@@ -22,7 +22,10 @@ class Robotiq2F85:
         if robotUID == None:
             startPos         = startingPosition
             startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
-            self.gripper     = [p.loadURDF("./models/Robotiq_2F85.urdf",startPos, startOrientation)]
+
+            dirname  = os.path.dirname(__file__)
+            filename = os.path.join(dirname, 'models/Robotiq_2F85.urdf')
+            self.gripper     = [p.loadURDF(filename,startPos, startOrientation)]
         else:
             self.gripper = [robotUID]
 
