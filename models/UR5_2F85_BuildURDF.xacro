@@ -39,7 +39,13 @@
         <parent link="gripper_base"/>
         <child link="tcp"/>
     </joint>
-    <link name="tcp" />
+    <link name="tcp" >
+        <!-- If no inertial parameters are supplied, PyBullet will use a mass of 1Kg. -->
+        <inertial>
+            <mass value="0"/>
+            <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+        </inertial>
+    </link>
 
 </robot>
 
