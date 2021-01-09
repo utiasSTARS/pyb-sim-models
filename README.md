@@ -49,6 +49,9 @@ Finally, a Tool Center Point (TCP) is provided in the UR5+2F85 model as a conven
 <link name="tcp" />
 ```
 
+# UR-5 + 2F-85
+The URDF tree of the whole robot can be visualized [here](https://github.com/utiasSTARS/pyb-sim-models/files/5791296/UR5_2F85.pdf).
+
 # Universal Robot UR-5 Model
 This model is a very slightly modified version of the model produced by the manufacturer (see [here](https://github.com/ros-industrial/universal_robot)). The only modifications made to the XACRO file provided by the package are to disable certain features specifically made for ROS or Gazebo.
 
