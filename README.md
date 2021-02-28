@@ -1,7 +1,31 @@
 # Simulation Models for PyBullet
 A repository of realistic simulation models.
 
-To test, run:
+## Installation
+To install, `cd` into the repository directory (the one with `setup.py`) and run:
+```bash
+pip install .
+```
+or
+```bash
+pip install -e .
+```
+The `-e` flag tells pip to install the package in-place, which lets you make changes to the code without having to reinstall every time. *Do not do this on shared workstations!*
+
+You should then be able to import the package in the Python interpreter.
+```python
+$ python3
+Python 3.8.5 (default, Jul 28 2020, 12:59:40) 
+[GCC 9.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import pbsm
+pybullet build time: Sep 22 2020 00:56:01
+>>> from pbsm import UR5_2F85
+>>>
+```
+
+## Quick test
+A example script is provided with the package and can be executed with:
 ```bash
 python3 test_environment.py
 ```
