@@ -5,19 +5,25 @@ if sys.version_info < MIN_PYTHON:
     sys.exit("Python %s.%s or later is required.\n" % MIN_PYTHON)
 
 import os
+from pathlib import Path
 import numpy as np
 import pybullet as p
 from pbsm import UR5
 from pbsm import Robotiq2F85
 
 class UR5_2F85:
-    def __init__(self, simulatorConnectionID, startingPosition=[0,0,0.001], startingOrientationRAD=[0,0,0]):
+    def __init__(self, simulatorConnectionID, startingPosition=[0,0,0.001], startingOrientationRAD=[0,0,0], alternateModelFilename=None):
         self._cid = simulatorConnectionID
         startPos  = startingPosition
         startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
 
-        dirname  = os.path.dirname(__file__)
-        filename = os.path.join(dirname, '../models/UR5_2F85.urdf')
+        #An slightly modified URDF can be used
+        if alternateModelFilename != None and Path(alternateModelFilename).exists():
+            filename = alternateModelFilename
+        else:
+            dirname  = os.path.dirname(__file__)
+            filename = os.path.join(dirname, '../models/UR5_2F85.urdf')
+        
         self.robot = [p.loadURDF(filename,startPos, startOrientation)]
 
         self.ur5     = UR5(self._cid, robotUID=self.getUID())
@@ -140,6 +146,11 @@ class UR5_2F85:
     #Each of left_finger_goal, right_finger_goal is a percentage that specify how close each finger is (100 = Fully closed, 0 = Fully open)
     def setGripperGoal(self, left_finger_goal, right_finger_goal):
         self.Rob2f85.setGoal(left_finger_goal, right_finger_goal)
+
+    #Retrieve the unique ID associated with a joint name.
+    #Returns None if the joint name is not found
+    def getJointIndexFromName(self, JointName):
+        return self.ur5.getJointIndexFromName(JointName)
 
     def printJointsInfo(self):
         numJoints = p.getNumJoints(self.getUID(), self._cid)
