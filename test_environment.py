@@ -1,11 +1,11 @@
+import os
 import time
 import math
 import numpy as np
 import pybullet as p
 import pybullet_data
-from pybullet_UR5 import UR5
-from pybullet_Robotiq2F85 import Robotiq2F85
-from pybullet_UR5_2F85 import UR5_2F85
+import pbsm
+from pbsm import UR5_2F85, UR5, Robotiq2F85
 
 cid = p.connect(p.GUI)#or p.DIRECT for non-graphical version
 
@@ -61,8 +61,9 @@ p.setGravity(0,0,-9.81)
 #between the plane and the robot arm.
 planeId = p.loadURDF("plane.urdf")
 
-#Add a hammer into the scene
-hammerId = p.loadURDF("./models/HammerSmaller/urdf/HammerSmaller.urdf", [0.35,0,0.03], p.getQuaternionFromEuler([0,math.radians(90),math.radians(180)]))
+#A wild hammer enters the scene...
+hammer_model_path = os.path.dirname(pbsm.__file__) + "/models/HammerSmaller/urdf/HammerSmaller.urdf"
+hammerId = p.loadURDF(hammer_model_path, [0.35,0,0.03], p.getQuaternionFromEuler([0,math.radians(90),math.radians(180)]))
 p.changeDynamics(hammerId,-1,lateralFriction=1, spinningFriction=1)
 
 #Perform a sequence

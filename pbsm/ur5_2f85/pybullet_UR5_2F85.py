@@ -7,8 +7,8 @@ if sys.version_info < MIN_PYTHON:
 import os
 import numpy as np
 import pybullet as p
-from pybullet_UR5 import UR5
-from pybullet_Robotiq2F85 import Robotiq2F85
+from pbsm import UR5
+from pbsm import Robotiq2F85
 
 class UR5_2F85:
     def __init__(self, simulatorConnectionID, startingPosition=[0,0,0.001], startingOrientationRAD=[0,0,0]):
@@ -17,7 +17,7 @@ class UR5_2F85:
         startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
 
         dirname  = os.path.dirname(__file__)
-        filename = os.path.join(dirname, 'models/UR5_2F85.urdf')
+        filename = os.path.join(dirname, '../models/UR5_2F85.urdf')
         self.robot = [p.loadURDF(filename,startPos, startOrientation)]
 
         self.ur5     = UR5(self._cid, robotUID=self.getUID())

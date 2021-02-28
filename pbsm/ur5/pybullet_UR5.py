@@ -19,7 +19,7 @@ class UR5:
             startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
             
             dirname  = os.path.dirname(__file__)
-            filename = os.path.join(dirname, 'models/UR5.urdf')
+            filename = os.path.join(dirname, '../models/UR5.urdf')
             self.arm = [p.loadURDF(filename,startPos, startOrientation)]
         else:
             self.arm = [robotUID]
