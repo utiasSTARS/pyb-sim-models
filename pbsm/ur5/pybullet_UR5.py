@@ -8,18 +8,22 @@ import os
 import logging
 import numpy as np
 import pybullet as p
+from pathlib import Path
 
 class UR5:
-    def __init__(self, simulatorConnectionID, robotUID=None, startingPosition=[0,0,0.001], startingOrientationRAD=[0,0,0]):
+    def __init__(self, simulatorConnectionID, robotUID=None, startingPosition=[0,0,0.001], startingOrientationRAD=[0,0,0], alternateModelFilename=None):
         self._cid = simulatorConnectionID
 
         #If no robot unique id (robotUID) is supplied, we assume that we want to instantiate a new UR5
         if robotUID == None:
             startPos  = startingPosition
             startOrientation = p.getQuaternionFromEuler(startingOrientationRAD)
-            
-            dirname  = os.path.dirname(__file__)
-            filename = os.path.join(dirname, '../models/UR5.urdf')
+            #A slightly modified URDF can be used
+            if alternateModelFilename != None and Path(alternateModelFilename).exists():
+                filename = alternateModelFilename
+            else:
+                dirname  = os.path.dirname(__file__)
+                filename = os.path.join(dirname, '../models/UR5.urdf')
             self.arm = [p.loadURDF(filename,startPos, startOrientation)]
         else:
             self.arm = [robotUID]
