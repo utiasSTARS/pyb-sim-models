@@ -182,7 +182,7 @@ p.addUserDebugLine(lineFromXYZ=[0,0,0], lineToXYZ=[0,1,0], lineColorRGB=[0,1,0],
 p.addUserDebugLine(lineFromXYZ=[0,0,0], lineToXYZ=[0,0,1], lineColorRGB=[0,0,1], lineWidth=0.1, lifeTime=0, parentObjectUniqueId=hammerId, parentLinkIndex=-1)
 
 
-for i in range(0,8000):  
+for i in range(0,8000):
     p.stepSimulation()
     A = np.deg2rad(45)
     f0 = 0.7/10 * fixedTimeStep
