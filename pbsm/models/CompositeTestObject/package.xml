@@ -1,0 +1,19 @@
+<package format="2">
+  <name>Composite Test Object</name>
+  <version>1.0.0</version>
+  <description>
+    <p>URDF Description package for Composite Test Object</p>
+    <p>Used to test inertial parameters identification algorithms.</p>
+  </description>
+  <author>Philippe Nadeau</author>
+  <maintainer email="philippe.nadeau@robotics.utias.utoronto.ca" />
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roslaunch</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rviz</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <export>
+    <architecture_independent />
+  </export>
+</package>
