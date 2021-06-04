@@ -114,16 +114,15 @@ class CompositeTestObject:
         #10 weight holes can be filled with air, plastic or steel
 
         #1000 Kg/m^3 = 1 g/cm^3
-        plastic_density = 1000     
-        air_density     = 0    
-        steel_density   = 8000 
+        plastic_density = 1000
+        steel_density   = 7770 
 
         #Initially, we assume that the whole body is filled with plastic.
         mm_to_m = 1e-3
 
         #Weight holes specifications
         w_r = mm_to_m*12.7 #Radius
-        w_h = mm_to_m*12.7 #Height
+        w_h = mm_to_m*25.4 #Height
 
         #Bolt holes specifications
         b_r = mm_to_m*3.3 #Radius
