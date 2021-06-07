@@ -50,8 +50,8 @@ Symbols:
 Patterns       Weights Locations
 
     0 0 0
-      o        S: 0 1 2
-      o        P: 3 4 5 6 8
+      0        S: 0 1 2 3
+      o        P: 4 5 6 8
       o
       o
     . o .
@@ -107,7 +107,7 @@ Patterns       Weights Locations
 ```
 To generate these objects, the following command lines can be used (bolts locations are not specified):
 ```
-$ ./GenerateObjectConfiguration.py -s 0 1 2 -p 3 4 5 6 8 -o Hammer.urdf
+$ ./GenerateObjectConfiguration.py -s 0 1 2 3 -p 4 5 6 8 -o Hammer.urdf
 $ ./GenerateObjectConfiguration.py -s 0 1 2 7 8 9 -p 3 4 5 6 -o Barbell.urdf
 $ ./GenerateObjectConfiguration.py -s 0 1 2 3 4 5 6 -o Tee.urdf
 $ ./GenerateObjectConfiguration.py -s 0 1 2 3 4 5 6 7 8 9 -o Homogeneous.urdf
