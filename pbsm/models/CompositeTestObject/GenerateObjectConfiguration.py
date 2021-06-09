@@ -206,10 +206,14 @@ class CompositeTestObject:
 
         #Print inertial parameters
         if print_params:
+            #Do not use scientific notation -- easier to copy into YAML files that way.
+            np.set_printoptions(suppress=True, formatter={'float_kind':'{:10.10f}'.format})
             print(OUTPUT_URDF)
             print(total_mass)
             print(total_com)
             print(total_inertia)
+            #Put back default printing options
+            np.set_printoptions(edgeitems=3, infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
 
         #Save the inertial parameters in the URDF
         obj_mass    = total_mass                        #The mass of the link in kilograms.
