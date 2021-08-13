@@ -6,20 +6,22 @@ This repository contains code used to generate URDF models of a variety of test 
 ## Usage
 The python script takes as arguments the locations of the bolts and weights and returns as the output the name of the generated URDF, the mass, the centre of mass and the inertia matrix of the object.
 ```
-usage: GenerateObjectConfiguration.py [-h] [-b [POSITION [POSITION ...]]] [-s [POSITION [POSITION ...]]] [-p [POSITION [POSITION ...]]] [-o [FILE]] [-v]
+usage: GenerateObjectConfiguration.py [-h] [-b [POSITION ...]] [-s [POSITION ...]] [-p [POSITION ...]] [-o [FILE]] [--print] [--linkxacro] [-v]
 
 Generate the URDF of a composite object with predictable inertial parameters.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -b [POSITION [POSITION ...]], --bolts [POSITION [POSITION ...]]
+  -b [POSITION ...], --bolts [POSITION ...]
                         List of bolt locations.
-  -s [POSITION [POSITION ...]], --steelweights [POSITION [POSITION ...]]
+  -s [POSITION ...], --steelweights [POSITION ...]
                         List of weights locations where steel weights are placed.
-  -p [POSITION [POSITION ...]], --plasticweights [POSITION [POSITION ...]]
+  -p [POSITION ...], --plasticweights [POSITION ...]
                         List of weights locations where plastic weights are placed.
   -o [FILE], --output [FILE]
                         Optional filename of the output URDF to generate.
+  --print               Prints the resulting inertial parameters.
+  --linkxacro           Generates a XACRO file, that can be included by a parent XACRO, containing only the link.
   -v, --version         show program's version number and exit
 ```
 
