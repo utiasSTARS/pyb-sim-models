@@ -125,7 +125,9 @@ class CompositeTestObject:
         mm_to_m = 1e-3
 
         #Weight holes specifications
-        w_r = mm_to_m*15 #Radius
+        #Simulation: Radius=12.7
+        #Real-world: Radius=15
+        w_r = mm_to_m*12.7 #Radius
         w_h = mm_to_m*25.4 #Height
 
         #Bolt holes specifications
