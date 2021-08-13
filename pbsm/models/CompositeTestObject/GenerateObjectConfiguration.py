@@ -73,7 +73,8 @@ class CompositeTestObject:
         height = dimensions[1]
 
         com_ori = centre[0:3,0:3]
-        com_pos = centre[0:3,3] + [0,-(4*radius)/(3*math.pi),0]
+        sign = (centre[1,3]/abs(centre[1,3]))
+        com_pos = centre[0:3,3] + [0,sign*(4*radius)/(3*math.pi),0]
 
         mass = math.pi*radius**2 * height * mass_density / 2
 
@@ -114,6 +115,8 @@ class CompositeTestObject:
         #10 weight holes can be filled with air, plastic or steel
 
         #1000 Kg/m^3 = 1 g/cm^3
+        #Simulation values: PLA=260, ABS=1040, Steel=7770
+        #Real-world values: PLA=491, ABS=1321, Steel=7847
         PLA_struct_density  = 260  #Assumes a 20% infill
         ABS_density         = 1040
         steel_density       = 7770  
@@ -122,7 +125,7 @@ class CompositeTestObject:
         mm_to_m = 1e-3
 
         #Weight holes specifications
-        w_r = mm_to_m*12.7 #Radius
+        w_r = mm_to_m*15 #Radius
         w_h = mm_to_m*25.4 #Height
 
         #Bolt holes specifications
