@@ -1,6 +1,8 @@
 # Composite Test Object for Simulated Robotic Manipulation Tasks
 This repository contains code used to generate URDF models of a variety of test objects. The objects are built from two 3d-printed structures, M6 bolts and cylindrical weights. The idea is to make it easy to produce real objects that are very similar to the simulated ones and that can be arranged in a variety of configurations depending on where the weights are placed.
 
+![CompositeTestObjectRenderingCropped](https://user-images.githubusercontent.com/10478385/129379216-9d5654d4-48e8-4de1-a522-49244e420ea1.png)
+
 ## Usage
 The python script takes as arguments the locations of the bolts and weights and returns as the output the name of the generated URDF, the mass, the centre of mass and the inertia matrix of the object.
 ```
@@ -123,10 +125,12 @@ Inside the structure (left) and outside the structure (right). Large holes and u
 <img src="https://user-images.githubusercontent.com/10478385/120525548-39677100-c3a6-11eb-9483-9c053e8e0814.png" alt="Inside of Structure" height="400"/>
 <img src="https://user-images.githubusercontent.com/10478385/120525557-3bc9cb00-c3a6-11eb-8546-acb9feadb68c.png" alt="Outside of Structure" height="400"/>
 
-## Weights
-The cylindrical weights have a diameter of 1 inch (25.4mm) and a height of 0.5 inch (12.7mm). Two kits (20 weights) were bought from [here](https://www.amazon.ca/Precision-Calibration-Digital-Balance-Jewellery/dp/B082MMGG92). Each individual steel weight is 50 grams and has a mass density of about 8 g/cm^3 or 8000 Kg/m^3.
+When printing the structure using PLA with a 20% infill, the weight of each half-structure should be about 320 grams.
 
-Similarly sized weights can easily be made out of wood, plastic or foam rods, providing a variety of weights.
+## Weights
+The cylindrical weights have a diameter of 1 inch (25.4mm) and a height of 0.5 inch (12.7mm). Two kits (20 weights) were bought from [here](https://www.amazon.ca/Precision-Calibration-Digital-Balance-Jewellery/dp/B082MMGG92) and pairs of two 50 grams weights are attached together such that each cylindrical steel weight (with height 1 inch) is 100 grams (mass density of about 7.77 g/cm^3 or 7770 Kg/m^3).
+
+Similarly sized weights can easily be made out of wood, plastic or foam rods, providing a variety of weights. For instance, an ABS rod was bought from [here](https://www.mcmaster.com/8587K6/) and cut into pieces to make several 17 grams weights.
 
 ## Bolts
 The two halves of the structures are meant to be held together with bolts, holding the weights in between. The diameter of the bolt holes is 6.6 mm and the space for the head of the bolts has a diameter of 11.8 mm and a depth of 6 mm. The distance between two vertices of the hex nut being 11.547 mm, some clearance is left to allow the nut to turn and a small tool to hold it while a bolt is being placed.
