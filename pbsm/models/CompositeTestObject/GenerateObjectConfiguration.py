@@ -117,16 +117,21 @@ class CompositeTestObject:
         #1000 Kg/m^3 = 1 g/cm^3
         #Simulation values: PLA=260, ABS=1040, Steel=7770
         #Real-world values: PLA=491, ABS=1321, Steel=7847
-        PLA_struct_density  = 260  #Assumes a 20% infill
-        ABS_density         = 1040
-        steel_density       = 7770  
+        PLA_struct_density  = 491  #Assumes a 20% infill
+        ABS_density         = 1321
+        steel_density       = 7847  
 
         #Initially, we assume that the whole body is filled with plastic.
         mm_to_m = 1e-3
 
         #Weight holes specifications
+        #There is a clearance in the 3D-printed version
         #Simulation: Radius=12.7
         #Real-world: Radius=15
+        wh_r = mm_to_m*15 #Radius
+        wh_h = mm_to_m*25.4 #Height
+
+        #Weight specifications
         w_r = mm_to_m*12.7 #Radius
         w_h = mm_to_m*25.4 #Height
 
@@ -155,16 +160,16 @@ class CompositeTestObject:
                         half_cylinder_inertia(mm_to_m*np.array([7.5,50]), PLA_struct_density, com_pose(0,0,0, bolt_pos[14])),
 
                         #Remove plastic (negative density) for weight holes
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[0])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[1])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[2])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[3])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[4])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[5])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[6])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[7])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[8])),
-                        cylinder_inertia([w_r,w_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[9])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[0])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[1])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[2])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[3])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[4])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[5])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[6])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[7])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[8])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[9])),
 
                         #Remove plastic (negative density) for bolt holes
                         cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[0])),
