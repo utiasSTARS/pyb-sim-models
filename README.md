@@ -76,7 +76,7 @@ Finally, a Tool Center Point (TCP) is provided in the UR5+2F85 model as a conven
 
 ## Universal Robots UR-5
 A model of the UR-5 is included in this package.
-See [here](https://github.com/utiasSTARS/pyb-sim-models/tree/main/pbsm/ur5/README.md) for documentation about this model.
+See [here](https://github.com/utiasSTARS/pyb-sim-models/tree/main/pbsm/models/ur5) for documentation about this model.
 
 ## Robotiq 2F-85
 A realistic model of the under-actuated Robotiq 2F-85 gripper is distributed in this package.
