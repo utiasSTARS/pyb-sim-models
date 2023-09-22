@@ -127,7 +127,7 @@ Inside the structure (left) and outside the structure (right). Large holes and u
 <img src="https://user-images.githubusercontent.com/10478385/120525548-39677100-c3a6-11eb-9483-9c053e8e0814.png" alt="Inside of Structure" height="400"/>
 <img src="https://user-images.githubusercontent.com/10478385/120525557-3bc9cb00-c3a6-11eb-8546-acb9feadb68c.png" alt="Outside of Structure" height="400"/>
 
-When printing the structure using PLA with a 20% infill, the weight of each half-structure should be about 320 grams.
+The files needed to 3D print the two identical halves can be found [in the cad directory](https://github.com/utiasSTARS/pyb-sim-models/tree/main/pbsm/models/CompositeTestObject/cad) that should contain a [Solidworks SLDPRT file](https://github.com/utiasSTARS/pyb-sim-models/tree/main/pbsm/models/CompositeTestObject/cad/HalfBody.SLDPRT) and a [3D printable STL file](https://github.com/utiasSTARS/pyb-sim-models/tree/main/pbsm/models/CompositeTestObject/cad/HalfBody.STL). When printing the structure using PLA with a 20% infill, the weight of each half-structure should be about 320 grams.
 
 ## Weights
 The cylindrical weights have a diameter of 1 inch (25.4mm) and a height of 0.5 inch (12.7mm). Two kits (20 weights) were bought from [here](https://www.amazon.ca/Precision-Calibration-Digital-Balance-Jewellery/dp/B082MMGG92) and pairs of two 50 grams weights are attached together such that each cylindrical steel weight (with height 1 inch) is 100 grams (mass density of about 7.77 g/cm^3 or 7770 Kg/m^3).
@@ -136,5 +136,22 @@ Similarly sized weights can easily be made out of wood, plastic or foam rods, pr
 
 ## Bolts
 The two halves of the structures are meant to be held together with bolts, holding the weights in between. The diameter of the bolt holes is 6.6 mm and the space for the head of the bolts has a diameter of 11.8 mm and a depth of 6 mm. The distance between two vertices of the hex nut being 11.547 mm, some clearance is left to allow the nut to turn and a small tool to hold it while a bolt is being placed.
-- [Bolts](https://www.mcmaster.com/91290A203/)
-- [Nuts](https://www.mcmaster.com/90592A016/)
+- [Bolts](https://www.mcmaster.com/91290A203/) each weighting about 11 grams
+- [Nuts](https://www.mcmaster.com/90592A016/) each weighting about 2 grams
+
+## Citation
+If you used any part of this software in your work, please cite our paper:  
+```
+@inproceedings{nadeau_fastInertialIdent_2022, 
+    AUTHOR    = {Philippe Nadeau AND Matthew Giamou AND Jonathan Kelly}, 
+    TITLE     = { {Fast Object Inertial Parameter Identification for Collaborative Robots} }, 
+    BOOKTITLE = {Proceedings of the {IEEE} International Conference on Robotics and Automation {(ICRA)}}, 
+    DATE      = {2022-05-23/2022-05-27},
+    YEAR      = {2022}, 
+    MONTH     = {May}, 
+    ADDRESS   = {Philadelphia, PA, USA},
+    DOI       = {10.1109/icra46639.2022.9916213},
+    URL       = {https://arxiv.org/abs/2203.00830},
+    VIDEO     = {https://www.youtube.com/watch?v=BNgGSMkgfY4}
+}
+```
