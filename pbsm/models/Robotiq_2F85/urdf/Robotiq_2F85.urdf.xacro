@@ -340,9 +340,9 @@
       xyz="-0.0061148 0.047125 0"
       rpy="3.1416 0 -2.9033" />
     <parent
-      link="gripper_right_coupler" />
+      link="${name}_right_coupler" />
     <child
-      link="gripper_right_follower" />
+      link="${name}_right_follower" />
     <axis
       xyz="0 0 1" />
     <limit
