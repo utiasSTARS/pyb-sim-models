@@ -31,6 +31,11 @@ class CompositeTestObject:
         I_s = I_cs - mass * self.skew(com_s) @ self.skew(com_s)
         return I_s
 
+    # Compute the inertia tensor about the COM
+    def inertiaAtCOM(self, I_s, com_s, mass):
+        # Shift inertia tensor from origin to COM
+        return I_s - mass * self.skew(com_s) @ self.skew(com_s)
+
     #Return the mass and inertia tensor of a cuboid with given centre of mass
     #The inertia tensor is expressed wrt the origin of the com_pose
     def cuboid_inertia(self, dimensions, mass_density, com_pose):
@@ -215,20 +220,23 @@ class CompositeTestObject:
             total_inertia   += part[2]
         total_com = total_com / total_mass
 
+        # Compute the inertia tensor about the COM
+        I_com = self.inertiaAtCOM(total_inertia, total_com, total_mass)
+
         #Print inertial parameters
         if print_params:
             #Do not use scientific notation -- easier to copy into YAML files that way.
             np.set_printoptions(suppress=True, formatter={'float_kind':'{:10.10f}'.format})
             print(OUTPUT_URDF)
-            print(total_mass)
-            print(total_com)
-            print(total_inertia)
+            print("Total Mass:\t", total_mass)
+            print("Center of Mass:\t", total_com)
+            print("Inertia Tensor wrt. origin, about COM:\n", I_com)
             #Put back default printing options
             np.set_printoptions(edgeitems=3, infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
 
         # Update the inertial parameters in the URDF
         obj_mass = total_mass  # The mass of the link in kilograms.
-        obj_inertia = total_inertia  # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
+        obj_inertia = I_com  # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose, about CoM
         obj_origin_pose = self.com_pose(
             0, 0, 0, total_com
         )  # The pose of the center of mass relative to the link's reference frame
