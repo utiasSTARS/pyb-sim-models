@@ -31,6 +31,7 @@ class CompositeTestObject:
         I_s = I_cs - mass * self.skew(com_s) @ self.skew(com_s)
         return I_s
 
+
     #Return the mass and inertia tensor of a cuboid with given centre of mass
     #The inertia tensor is expressed wrt the origin of the com_pose
     def cuboid_inertia(self, dimensions, mass_density, com_pose):
@@ -85,13 +86,45 @@ class CompositeTestObject:
         return (mass, com_pos, inertia_o)
 
 
-    #Returns a 4x4 pose matrix from roll-pitch-yaw (r,p,y) and translation t=(tx,ty,tz)
-    def com_pose(self, r,p,y, t):
+    def rpy_to_pose_mat(self, r: float = 0, p: float = 0, y: float = 0, t: np.ndarray = np.array([0,0,0])):
+        '''
+        Returns a 4x4 pose matrix from roll-pitch-yaw (r,p,y) and translation t=(tx,ty,tz)
+
+        Parameters
+        ----------
+         - r (float): Roll angle in radians
+         - p (float): Pitch angle in radians
+         - y (float): Yaw angle in radians
+         - t (np.ndarray): Translation vector (tx,ty,tz)
+        '''
         tx, ty, tz = t[0:3]
         ori = R.from_euler("xyz", [r, p, y]).as_matrix()
         pos = np.array([tx,ty,tz])
-        pose = np.array([[ori[0,0],ori[0,1],ori[0,2],pos[0]],[ori[1,0],ori[1,1],ori[1,2],pos[1]],[ori[2,0],ori[2,1],ori[2,2],pos[2]],[0,0,0,1]])
+        pose = np.array([[ori[0,0],ori[0,1],ori[0,2],pos[0]],
+                         [ori[1,0],ori[1,1],ori[1,2],pos[1]],
+                         [ori[2,0],ori[2,1],ori[2,2],pos[2]],
+                         [0,0,0,1]])
         return pose
+    
+    def pose_mat_to_rpy(self, pose: np.ndarray):
+        '''
+        Returns the roll-pitch-yaw angles from a 4x4 pose matrix.
+
+        Note: This is the inverse of rpy_to_pose_mat.
+
+        Parameters
+        ----------
+         - pose (np.ndarray): 4x4 pose matrix
+
+        Returns
+        -------
+            - rpy (np.ndarray): Roll-pitch-yaw angles in radians
+            - pos (np.ndarray): Translation vector (tx,ty,tz)
+        '''
+        ori = pose[0:3,0:3]
+        pos = pose[0:3,3]
+        rpy = R.from_matrix(ori).as_euler("xyz")
+        return rpy, pos
 
     def __init__(self, bolts_attached, steel_weights_added, plastic_weights_added, OUTPUT_URDF, print_params=False, linkxacro=False):
         #Input URDF relative path
@@ -145,64 +178,64 @@ class CompositeTestObject:
         bolt_pos   = mm_to_m*np.array([[0,150,25],[-90,125,25],[-40,125,25],[40,125,25],[90,125,25],[0,100,25],[0,50,25],[0,0,25],[0,-50,25],[0,-100,25],[-90,-125,25],[-40,-125,25],[40,-125,25],[90,-125,25],(0,-150,25)])
 
         #Shorthands
-        com_pose                = self.com_pose
+        rpy_to_pose_mat         = self.rpy_to_pose_mat
         cuboid_inertia          = self.cuboid_inertia
         half_cylinder_inertia   = self.half_cylinder_inertia
         cylinder_inertia        = self.cylinder_inertia
 
 
         primitives = [  #Add base plastic cuboids
-                        cuboid_inertia(mm_to_m*np.array([50,200,50]), PLA_struct_density, com_pose(0,0,0, mm_to_m*np.array([0,0,25]))),
-                        cuboid_inertia(mm_to_m*np.array([200,50,50]), PLA_struct_density, com_pose(0,0,0, mm_to_m*np.array([0,125,25]))),
-                        cuboid_inertia(mm_to_m*np.array([200,50,50]), PLA_struct_density, com_pose(0,0,0, mm_to_m*np.array([0,-125,25]))),
+                        cuboid_inertia(mm_to_m*np.array([50,200,50]), PLA_struct_density, rpy_to_pose_mat(0,0,0, mm_to_m*np.array([0,0,25]))),
+                        cuboid_inertia(mm_to_m*np.array([200,50,50]), PLA_struct_density, rpy_to_pose_mat(0,0,0, mm_to_m*np.array([0,125,25]))),
+                        cuboid_inertia(mm_to_m*np.array([200,50,50]), PLA_struct_density, rpy_to_pose_mat(0,0,0, mm_to_m*np.array([0,-125,25]))),
                         
                         #Add base plastic bolt supports
-                        half_cylinder_inertia(mm_to_m*np.array([7.5,50]), PLA_struct_density, com_pose(0,0,0, bolt_pos[0])),
-                        half_cylinder_inertia(mm_to_m*np.array([7.5,50]), PLA_struct_density, com_pose(0,0,0, bolt_pos[14])),
+                        half_cylinder_inertia(mm_to_m*np.array([7.5,50]), PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[0])),
+                        half_cylinder_inertia(mm_to_m*np.array([7.5,50]), PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[14])),
 
                         #Remove plastic (negative density) for weight holes
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[0])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[1])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[2])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[3])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[4])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[5])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[6])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[7])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[8])),
-                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, com_pose(0,0,0, weight_pos[9])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[0])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[1])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[2])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[3])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[4])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[5])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[6])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[7])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[8])),
+                        cylinder_inertia([wh_r,wh_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, weight_pos[9])),
 
                         #Remove plastic (negative density) for bolt holes
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[0])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[1])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[2])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[3])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[4])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[5])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[6])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[7])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[8])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[9])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[10])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[11])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[12])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[13])),
-                        cylinder_inertia([b_r,b_h], -PLA_struct_density, com_pose(0,0,0, bolt_pos[14])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[0])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[1])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[2])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[3])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[4])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[5])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[6])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[7])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[8])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[9])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[10])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[11])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[12])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[13])),
+                        cylinder_inertia([b_r,b_h], -PLA_struct_density, rpy_to_pose_mat(0,0,0, bolt_pos[14])),
                         ]
 
         #Add bolts
         for bolt in bolts_attached:
-            i = cylinder_inertia([b_r,b_h], steel_density, com_pose(0,0,0, bolt_pos[bolt]))
+            i = cylinder_inertia([b_r,b_h], steel_density, rpy_to_pose_mat(0,0,0, bolt_pos[bolt]))
             primitives.append(i)
 
         #Add steel weights
         for weight in steel_weights_added:
-            i = cylinder_inertia([w_r,w_h], steel_density, com_pose(0,0,0, weight_pos[weight]))
+            i = cylinder_inertia([w_r,w_h], steel_density, rpy_to_pose_mat(0,0,0, weight_pos[weight]))
             primitives.append(i)
 
         #Add plastic weights
         for weight in plastic_weights_added:
-            i = cylinder_inertia([w_r,w_h], ABS_density, com_pose(0,0,0, weight_pos[weight]))
+            i = cylinder_inertia([w_r,w_h], ABS_density, rpy_to_pose_mat(0,0,0, weight_pos[weight]))
             primitives.append(i)
 
         #Compute the global inertial parameters
@@ -213,7 +246,19 @@ class CompositeTestObject:
             total_mass      += part[0]
             total_com       += part[0]*part[1]
             total_inertia   += part[2]
+
+        # Location of the centre of mass (unweighted) in the link's reference frame
         total_com = total_com / total_mass
+
+        # Compute the inertia tensor about the COM
+        I_com = self.inertiaAtCOM(total_inertia, total_com, total_mass)
+
+        # The mass of the link in kilograms.
+        obj_mass = total_mass  
+        # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
+        obj_inertia = total_inertia  
+        # The pose of the center of mass relative to the link's reference frame
+        obj_origin_pose = self.rpy_to_pose_mat(0, 0, 0, total_com)
 
         #Print inertial parameters
         if print_params:
@@ -226,28 +271,37 @@ class CompositeTestObject:
             #Put back default printing options
             np.set_printoptions(edgeitems=3, infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
 
-        # Update the inertial parameters in the URDF
-        obj_mass = total_mass  # The mass of the link in kilograms.
-        obj_inertia = total_inertia  # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
-        obj_origin_pose = self.com_pose(
-            0, 0, 0, total_com
-        )  # The pose of the center of mass relative to the link's reference frame
+        # Update the inertial parameters in the URDF by
+        # adding a new 'inertial' element to the link.
+        # Example:
+        # <inertial>
+        #     <origin xyz="0.0 0.03 0.025" rpy="0.0 0.0 0.0"/>
+        #     <mass value="1.1"/>
+        #     <inertia ixx="0.014" ixy="0.0" ixz="0.0" iyy="0.003" iyz="-0.001" izz="0.015"/>
+        # </inertial>
+        
         # Remove existing 'inertial' element if it exists
         inertial = link.find("inertial")
         if inertial is not None:
             link.remove(inertial)
+        
         # Create new 'inertial' element
         inertial = ET.SubElement(link, "inertial")
+        
         # Add 'mass' element
         mass_element = ET.SubElement(inertial, "mass")
         mass_element.set("value", f"{obj_mass}")
+        
         # Add 'origin' element
+        #  The xyz value represents the location of the centre of mass with respect to the link's reference frame.
+        #  The rpy value represents the orientation of the centre of mass frame with respect to the link's reference frame as a sequence of Euler rotations (r p y) in radians. This is important since the inertia matrix has to be expressed in the centre of mass frame.
         origin_element = ET.SubElement(inertial, "origin")
-        origin_xyz = obj_origin_pose[0:3, 3]
-        origin_rpy = R.from_matrix(obj_origin_pose[0:3, 0:3]).as_euler("xyz")
-        origin_element.set("xyz", " ".join(map(str, origin_xyz)))
-        origin_element.set("rpy", " ".join(map(str, origin_rpy)))
+        rpy, xyz = self.pose_mat_to_rpy(obj_origin_pose)
+        origin_element.set("xyz", " ".join(map(str, xyz)))
+        origin_element.set("rpy", " ".join(map(str, rpy)))
+        
         # Add 'inertia' element
+        #  Moments of inertia ixx, iyy, izz and products of inertia ixy, ixz, iyz with respect to the link’s center of mass frame.
         inertia_element = ET.SubElement(inertial, "inertia")
         ixx = obj_inertia[0, 0]
         ixy = obj_inertia[0, 1]
@@ -261,18 +315,14 @@ class CompositeTestObject:
         inertia_element.set("iyy", f"{iyy}")
         inertia_element.set("iyz", f"{iyz}")
         inertia_element.set("izz", f"{izz}")
-        # Save the modified URDF
-        tree.write(OUTPUT_URDF)
-        # Transforms the URDF into the link's XACRO by removing the
-        # two first lines and the last line.
+        
+        # Save the modified URDF to a file
+        #  If a XACRO is requested, only output the link in the file
         if linkxacro:
-            f = open(OUTPUT_URDF, 'r')
-            lines = f.readlines()
-            del lines[1]
-            del lines[0]
-            del lines[len(lines)-1]
-            with open(OUTPUT_URDF, 'w') as f:
-                f.writelines(lines)
+            xacro_link = ET.ElementTree(link)
+            xacro_link.write(OUTPUT_URDF, encoding='utf-8', xml_declaration=False, short_empty_elements=False)
+        else:
+            tree.write(OUTPUT_URDF, encoding='utf-8', xml_declaration=True, short_empty_elements=False)
 
 def init_argparse():
         parser = argparse.ArgumentParser(description="Generate the URDF of a composite object with predictable inertial parameters.")
@@ -283,7 +333,7 @@ def init_argparse():
         parser.add_argument('-o','--output', metavar='FILE', dest='output_urdf', nargs='?', default="GeneratedConfiguration.urdf",help='Optional filename of the output URDF to generate.')
         parser.add_argument("--print", help="Prints the resulting inertial parameters.", action="store_true")
         parser.add_argument("--linkxacro", help="Generates a XACRO file, that can be included by a parent XACRO, containing only the link.", action="store_true")
-        parser.add_argument("-v", "--version", action="version",version = f"{parser.prog} version 1.0.0")
+        parser.add_argument("-v", "--version", action="version",version = f"{parser.prog} version 0.1.2")
 
         return parser
 
