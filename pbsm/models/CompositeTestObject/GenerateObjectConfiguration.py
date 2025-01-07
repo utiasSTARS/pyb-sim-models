@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from urdfpy import URDF, Inertial, rpy_to_matrix
 from pathlib import Path
 import numpy as np
 import math
 import argparse
 import os
+import xml.etree.ElementTree as ET
+from scipy.spatial.transform import Rotation as R
 
 class CompositeTestObject:
 
@@ -87,7 +88,7 @@ class CompositeTestObject:
     #Returns a 4x4 pose matrix from roll-pitch-yaw (r,p,y) and translation t=(tx,ty,tz)
     def com_pose(self, r,p,y, t):
         tx, ty, tz = t[0:3]
-        ori = rpy_to_matrix([r,p,y])
+        ori = R.from_euler("xyz", [r, p, y]).as_matrix()
         pos = np.array([tx,ty,tz])
         pose = np.array([[ori[0,0],ori[0,1],ori[0,2],pos[0]],[ori[1,0],ori[1,1],ori[1,2],pos[1]],[ori[2,0],ori[2,1],ori[2,2],pos[2]],[0,0,0,1]])
         return pose
@@ -101,15 +102,15 @@ class CompositeTestObject:
             OUTPUT_URDF = str(Path(OUTPUT_URDF).with_suffix('.xacro'))
 
         #Replace 'package://' with relative paths.
-        #urdfpy does not support 'package://' but only relative paths
         with open(OBJECT_URDF_PATH, "rt") as fin:
             with open(OUTPUT_URDF, "wt") as fout:
                 for line in fin:
                     fout.write(line.replace('package://composite-test-object/', ''))
 
-        #Load the modified URDF
-        obj = URDF.load(OUTPUT_URDF)
-        body = obj.links[0]
+        # Load the URDF as XML
+        tree = ET.parse(OUTPUT_URDF)
+        root = tree.getroot()
+        link = root.find("link")
 
         #15 bolting through-all holes can be either filled with air or with steel
         #10 weight holes can be filled with air, plastic or steel
@@ -225,15 +226,45 @@ class CompositeTestObject:
             #Put back default printing options
             np.set_printoptions(edgeitems=3, infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
 
-        #Save the inertial parameters in the URDF
-        obj_mass    = total_mass                        #The mass of the link in kilograms.
-        obj_inertia = total_inertia                     #The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
-        obj_origin_pose = com_pose(0,0,0, total_com)    #The pose of the center of mass relative to the link's reference frame
-        body.inertial = Inertial(obj_mass, obj_inertia, obj_origin_pose)
-        obj.save(OUTPUT_URDF)
-
-        #Transforms the URDF into the link's XACRO by removing the
-        #two first lines and the last line.
+        # Update the inertial parameters in the URDF
+        obj_mass = total_mass  # The mass of the link in kilograms.
+        obj_inertia = total_inertia  # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
+        obj_origin_pose = self.com_pose(
+            0, 0, 0, total_com
+        )  # The pose of the center of mass relative to the link's reference frame
+        # Remove existing 'inertial' element if it exists
+        inertial = link.find("inertial")
+        if inertial is not None:
+            link.remove(inertial)
+        # Create new 'inertial' element
+        inertial = ET.SubElement(link, "inertial")
+        # Add 'mass' element
+        mass_element = ET.SubElement(inertial, "mass")
+        mass_element.set("value", f"{obj_mass}")
+        # Add 'origin' element
+        origin_element = ET.SubElement(inertial, "origin")
+        origin_xyz = obj_origin_pose[0:3, 3]
+        origin_rpy = R.from_matrix(obj_origin_pose[0:3, 0:3]).as_euler("xyz")
+        origin_element.set("xyz", " ".join(map(str, origin_xyz)))
+        origin_element.set("rpy", " ".join(map(str, origin_rpy)))
+        # Add 'inertia' element
+        inertia_element = ET.SubElement(inertial, "inertia")
+        ixx = obj_inertia[0, 0]
+        ixy = obj_inertia[0, 1]
+        ixz = obj_inertia[0, 2]
+        iyy = obj_inertia[1, 1]
+        iyz = obj_inertia[1, 2]
+        izz = obj_inertia[2, 2]
+        inertia_element.set("ixx", f"{ixx}")
+        inertia_element.set("ixy", f"{ixy}")
+        inertia_element.set("ixz", f"{ixz}")
+        inertia_element.set("iyy", f"{iyy}")
+        inertia_element.set("iyz", f"{iyz}")
+        inertia_element.set("izz", f"{izz}")
+        # Save the modified URDF
+        tree.write(OUTPUT_URDF)
+        # Transforms the URDF into the link's XACRO by removing the
+        # two first lines and the last line.
         if linkxacro:
             f = open(OUTPUT_URDF, 'r')
             lines = f.readlines()
