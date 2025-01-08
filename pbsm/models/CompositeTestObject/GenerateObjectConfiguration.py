@@ -10,80 +10,167 @@ from scipy.spatial.transform import Rotation as R
 
 class CompositeTestObject:
 
-    #Returns the skew-symmetric (or anti-symmetric) matrix of a 3D vector
-    #such that skew(a)*b == a x b
     def skew(self, r):
+        '''
+        Returns the skew-symmetric (or anti-symmetric) matrix of a 3D vector
+        such that skew(a)*b == a x b.
+
+        Parameters
+        ----------
+            - r (np.ndarray): 3D vector
+        '''
         return np.array([
             [0, -r[2], r[1]],
             [r[2], 0, -r[0]],
             [-r[1], r[0], 0],
         ])
 
-    #Compute the inertia tensor wrt frame S from the inertia tensor wrt center of mass.
-    # I_com: Inertia tensor computed at the location of the center of mass about axes aligned with the object.
-    # com_s: Position of the center of mass of the object with respect frame S.
-    # C_cs: Orientation of the object with respect to frame S.
-    # mass: Mass of the object.
-    def inertiaWrtS(self, I_com, com_s, C_cs, mass):
-        #1. Uses a similarity transform to align the axes of the I_com to frame S. (Rotation)
-        I_cs = C_cs @ I_com @ C_cs.T
+    def inertia_tensor_c_to_s(self, I_c, p_c_s, R_c_s, mass):
+        '''
+        Returns the inertia tensor with respect to frame S from the inertia tensor wrt the center of mass C.
+
+        Parameters
+        ----------
+            - I_c (np.ndarray): Inertia tensor of the object computed with respect to the centre of mass.
+            - p_c_s (np.ndarray): Position of the object's center of mass with respect to frame S.
+            - R_c_s (np.ndarray): Orientation of the object with respect to frame S.
+            - mass (float): Mass of the object.
+        '''
+        #1. Uses a similarity transform to align the axes of the I_c to frame S. (Rotation)
+        I_c_s = R_c_s @ I_c @ R_c_s.T
         #2. Uses the parallel axis theorem to express the inertia tensor wrt frame S. (Translation)
-        I_s = I_cs - mass * self.skew(com_s) @ self.skew(com_s)
+        I_s = I_c_s + mass * self.skew(p_c_s).T @ self.skew(p_c_s)
         return I_s
 
+    def inertia_tensor_s_to_c(self, I_s, p_c_s, R_c_s, mass):
+        '''
+        Returns the inertia tensor with respect to the center of mass C from the inertia tensor wrt frame S.
 
-    #Return the mass and inertia tensor of a cuboid with given centre of mass
-    #The inertia tensor is expressed wrt the origin of the com_pose
-    def cuboid_inertia(self, dimensions, mass_density, com_pose):
+        Parameters
+        ----------
+            - I_s (np.ndarray): Inertia tensor of the object computed with respect to frame S.
+            - p_c_s (np.ndarray): Position of the object's center of mass with respect to frame S.
+            - R_c_s (np.ndarray): Orientation of the object with respect to frame S.
+            - mass (float): Mass of the object.
+        '''
+        #1. Uses the parallel axis theorem to express the inertia tensor wrt the center of mass. (Translation)
+        I_c_s = I_s - mass * self.skew(p_c_s).T @ self.skew(p_c_s)
+        #2. Uses a similarity transform to align the axes of the I_c to frame C. (Rotation)
+        R_s_c = R_c_s.T
+        I_c = R_s_c @ I_c_s @ R_s_c.T
+        return I_c
+
+    def cuboid_inertia(self, dimensions, mass_density, X_c_s):
+        '''
+        Returns the inertial parameters of a filled cuboid with given dimensions and mass density.
+
+        Parameters
+        ----------
+            - dimensions (np.ndarray): Dimensions of the cuboid (dx, dy, dz)
+            - mass_density (float): Mass density of the material (in kg/m^3)
+            - X_c_s (np.ndarray): 4x4 pose matrix of a frame located at the center of mass of the cuboid
+                and oriented such that the axes are aligned with the cuboid's axes.
+
+        Returns
+        -------
+            Tuple containing:
+            - mass (float): Mass of the cuboid
+            - com_pos (np.ndarray): Position of the center of mass with respect to the S
+            - I_s (np.ndarray): Inertia tensor of the cuboid with respect to S
+        '''
         dx = dimensions[0]
         dy = dimensions[1]
         dz = dimensions[2]
 
-        com_ori = com_pose[0:3,0:3]
-        com_pos = com_pose[0:3,3]
+        R_c_s = X_c_s[0:3,0:3]
+        p_c_s = X_c_s[0:3,3]
 
         mass = dx*dy*dz*mass_density
 
-        inertia_c = (mass/12)*np.array([[dy**2+dz**2,0,0],[0,dx**2+dz**2,0],[0,0,dx**2+dy**2]])
-        inertia_o = self.inertiaWrtS(inertia_c, com_pos, com_ori, mass)
+        #Inertia tensor of the cuboid computed with respect to its center of mass
+        I_c = (mass/12)*np.array([[dy**2+dz**2,0,0],[0,dx**2+dz**2,0],[0,0,dx**2+dy**2]])
+        #Inertia tensor of the cuboid computed with respect to S
+        I_s = self.inertia_tensor_c_to_s(I_c, p_c_s, R_c_s, mass)
 
-        return (mass, com_pos, inertia_o)
+        return (mass, p_c_s, I_s)
 
-    #Return the mass and inertia tensor of a cylinder with given centre of mass
-    #The inertia tensor is expressed wrt the origin of the com_pose
-    def cylinder_inertia(self, dimensions, mass_density, com_pose):
+    def cylinder_inertia(self, dimensions, mass_density, X_c_s):
+        '''
+        Returns the inertial parameters of a filled cylinder with given dimensions and mass density.
+
+        Parameters
+        ----------
+            - dimensions (np.ndarray): Dimensions of the cylinder (radius, height)
+            - mass_density (float): Mass density of the material (in kg/m^3)
+            - X_c_s (np.ndarray): 4x4 pose matrix of a frame located at the center of mass of the cylinder
+                and oriented such that the axes are aligned with the cylinder's axes.
+        
+        Returns
+        -------
+            Tuple containing:
+            - mass (float): Mass of the cylinder
+            - p_c_s (np.ndarray): Position of the center of mass with respect to the S
+            - I_s (np.ndarray): Inertia tensor of the cylinder with respect to S
+        '''
         radius = dimensions[0]
         height = dimensions[1]
 
-        com_ori = com_pose[0:3,0:3]
-        com_pos = com_pose[0:3,3]
+        R_c_s = X_c_s[0:3,0:3]
+        p_c_s = X_c_s[0:3,3]
 
         mass = math.pi*radius**2 * height * mass_density
 
-        inertia_c = (mass/12)*np.array([[3*radius**2+height**2,0,0],[0,3*radius**2+height**2,0],[0,0,6*radius**2]])
-        inertia_o = self.inertiaWrtS(inertia_c, com_pos, com_ori, mass)
+        #Inertia tensor of the cylinder computed with respect to its center of mass
+        I_c = (mass/12)*np.array([[3*radius**2+height**2,0,0],[0,3*radius**2+height**2,0],[0,0,6*radius**2]])
+        #Inertia tensor of the cylinder computed with respect to S
+        I_s = self.inertia_tensor_c_to_s(I_c, p_c_s, R_c_s, mass)
 
-        return (mass, com_pos, inertia_o)
+        return (mass, p_c_s, I_s)
 
-    #Return the mass and inertia tensor of a half-cylinder with given centre of the full cylinder (located in the centre of the rectangular side)
-    #The Y axis of the half-cylinder goes from the centroid through the rectangular side
-    #The Z axis follows the height of the half-cylinder
-    #The inertia tensor is expressed wrt the origin of the com_pose
-    #https://www.efunda.com/math/solids/solids_display.cfm?SolidName=HalfCircularCylinder
-    def half_cylinder_inertia(self, dimensions, mass_density, centre):
+    def half_cylinder_inertia(self, dimensions, mass_density, X_o_s):
+        '''
+        Returns the inertial parameters of a filled half-cylinder with given dimensions and mass density.
+        The half-cylinder is obtained by cutting a full cylinder in half along its height.
+        The origin of the half-cylinder is located at the centre of the full cylinder.
+        The Y axis of the half-cylinder goes from the centroid through the rectangular side and the Z axis follows the height of the half-cylinder.
+
+        See: https://www.efunda.com/math/solids/solids_display.cfm?SolidName=HalfCircularCylinder
+
+        Parameters
+        ----------
+            - dimensions (np.ndarray): Dimensions of the half-cylinder (radius, height)
+            - mass_density (float): Mass density of the material (in kg/m^3)
+            - X_o_s (np.ndarray): 4x4 pose matrix of a frame located at the center of mass of the FULL CYLINDER
+                and oriented such that the axes are aligned with the full cylinder's axes.
+
+        Returns
+        -------
+            Tuple containing:
+            - mass (float): Mass of the half-cylinder
+            - p_c_s (np.ndarray): Position of the center of mass with respect to the S
+            - I_s (np.ndarray): Inertia tensor of the half-cylinder with respect to S
+        '''
         radius = dimensions[0]
         height = dimensions[1]
 
-        com_ori = centre[0:3,0:3]
-        sign = (centre[1,3]/abs(centre[1,3]))
-        com_pos = centre[0:3,3] + [0,sign*(4*radius)/(3*math.pi),0]
+        #The centre of mass of the half-cylinder is offset from the centre of the full cylinder
+        # in the -Y direction.
+        R_c_s = X_o_s[0:3,0:3]
+        p_c_o = np.array([0, -(4*radius)/(3*math.pi), 0])
+        p_o_s = X_o_s[0:3,3] 
+        p_c_s = p_o_s + R_c_s @ p_c_o
 
         mass = math.pi*radius**2 * height * mass_density / 2
 
-        inertia_c = mass*np.array([[(1/4)*radius**2+(1/3)*height**2,0,0],[0,(1/4)*radius**2+(1/3)*height**2,0],[0,0,(1/2)*radius**2]])
-        inertia_o = self.inertiaWrtS(inertia_c, centre[0:3,3], com_ori, mass)
+        #Inertia tensor of the half-cylinder computed with respect to its center of mass
+        Ixx = mass*((1/4-16/(9*math.pi**2))*radius**2 + (1/12)*height**2)
+        Iyy = mass*((1/4)*radius**2 + (1/12)*height**2)
+        Izz = mass*((1/2-16/(9*math.pi**2))*radius**2)
+        I_c = np.array([[Ixx,0,0],[0,Iyy,0],[0,0,Izz]])
+        #Inertia tensor of the half-cylinder computed with respect to S
+        I_s = self.inertia_tensor_c_to_s(I_c, p_c_s, R_c_s, mass)
 
-        return (mass, com_pos, inertia_o)
+        return (mass, p_c_s, I_s)
 
 
     def rpy_to_pose_mat(self, r: float = 0, p: float = 0, y: float = 0, t: np.ndarray = np.array([0,0,0])):
@@ -92,10 +179,14 @@ class CompositeTestObject:
 
         Parameters
         ----------
-         - r (float): Roll angle in radians
-         - p (float): Pitch angle in radians
-         - y (float): Yaw angle in radians
-         - t (np.ndarray): Translation vector (tx,ty,tz)
+            - r (float): Roll angle in radians
+            - p (float): Pitch angle in radians
+            - y (float): Yaw angle in radians
+            - t (np.ndarray): Translation vector (tx,ty,tz)
+
+        Returns
+        -------
+            - pose (np.ndarray): 4x4 pose matrix
         '''
         tx, ty, tz = t[0:3]
         ori = R.from_euler("xyz", [r, p, y]).as_matrix()
@@ -114,7 +205,7 @@ class CompositeTestObject:
 
         Parameters
         ----------
-         - pose (np.ndarray): 4x4 pose matrix
+            - pose (np.ndarray): 4x4 pose matrix
 
         Returns
         -------
@@ -145,12 +236,8 @@ class CompositeTestObject:
         root = tree.getroot()
         link = root.find("link")
 
-        #15 bolting through-all holes can be either filled with air or with steel
-        #10 weight holes can be filled with air, plastic or steel
-
-        #1000 Kg/m^3 = 1 g/cm^3
-        #Simulation values: PLA=260, ABS=1040, Steel=7770
-        #Real-world values: PLA=491, ABS=1321, Steel=7847
+        #Mass density of materials in kg/m^3
+        # 1000 Kg/m^3 = 1 g/cm^3
         PLA_struct_density  = 491  #Assumes a 20% infill
         ABS_density         = 1321
         steel_density       = 7847  
@@ -159,9 +246,9 @@ class CompositeTestObject:
         mm_to_m = 1e-3
 
         #Weight holes specifications
-        #There is a clearance in the 3D-printed version
-        #Simulation: Radius=12.7
-        #Real-world: Radius=15
+        # Note: There is a clearance in the 3D-printed version
+        #  Simulation: Radius=12.7
+        #  Real-world: Radius=15
         wh_r = mm_to_m*15 #Radius
         wh_h = mm_to_m*25.4 #Height
 
@@ -239,35 +326,38 @@ class CompositeTestObject:
             primitives.append(i)
 
         #Compute the global inertial parameters
-        total_mass      = 0.
-        total_com       = np.array([0.,0.,0.])
-        total_inertia   = np.zeros((3,3))
+        total_mass  = 0.
+        p_c_s       = np.array([0.,0.,0.])
+        I_s         = np.zeros((3,3))
+
+        #The total inertia is the sum of each component's inertia
         for part in primitives:
-            total_mass      += part[0]
-            total_com       += part[0]*part[1]
-            total_inertia   += part[2]
+            total_mass  += part[0]
+            p_c_s       += part[0]*part[1]
+            I_s         += part[2]
 
         # Location of the centre of mass (unweighted) in the link's reference frame
-        total_com = total_com / total_mass
+        p_c_s = p_c_s / total_mass
 
-        # Compute the inertia tensor about the COM
-        I_com = self.inertiaAtCOM(total_inertia, total_com, total_mass)
+        # Compute the inertia tensor about the CoM frame, whose axes are aligned with the link's reference frame.
+        I_c = self.inertia_tensor_s_to_c(I_s, p_c_s, np.eye(3), total_mass)
 
         # The mass of the link in kilograms.
         obj_mass = total_mass  
         # The 3x3 symmetric rotational inertia matrix with respect to obj_origin_pose
-        obj_inertia = total_inertia  
+        obj_inertia = I_c  
         # The pose of the center of mass relative to the link's reference frame
-        obj_origin_pose = self.rpy_to_pose_mat(0, 0, 0, total_com)
+        obj_origin_pose = self.rpy_to_pose_mat(0, 0, 0, p_c_s)
 
         #Print inertial parameters
         if print_params:
             #Do not use scientific notation -- easier to copy into YAML files that way.
             np.set_printoptions(suppress=True, formatter={'float_kind':'{:10.10f}'.format})
             print(OUTPUT_URDF)
-            print(total_mass)
-            print(total_com)
-            print(total_inertia)
+            print('Inertial Parameters:')
+            print("Total Mass:\t", total_mass)
+            print("Center of Mass wrt. origin:\t", p_c_s)
+            print("Inertia Tensor wrt. CoM:\n", I_c)
             #Put back default printing options
             np.set_printoptions(edgeitems=3, infstr='inf',linewidth=75, nanstr='nan', precision=8,suppress=False, threshold=1000, formatter=None)
 

@@ -33,13 +33,15 @@ The bolt holes (Bx) and weight holes (Wy) are referred using a number system tha
 
 ### Example
 ```
-phil@stars:~/composite-test-object$ python3 GenerateObjectConfiguration.py -b 0 14 -s 0 1 2 3 4 -o test.urdf
+> python3 GenerateObjectConfiguration.py -b 0 14 -s 0 1 2 3 4 -o test.urdf --print
 test.urdf
-1.7036018760742466
-[0.         0.01433761 0.025     ]
-[[ 0.02142775  0.          0.        ]
- [ 0.          0.00509287 -0.00061134]
- [ 0.         -0.00061134  0.02374549]]
+Inertial Parameters:
+Total Mass:      1.1718997410246232
+Center of Mass wrt. origin:      [0.0000000000 0.0409352866 0.0250000000]
+Inertia Tensor wrt. CoM:
+ [[0.0117931994 0.0000000000 0.0000000000]
+ [0.0000000000 0.0025575726 0.0000000000]
+ [0.0000000000 0.0000000000 0.0139859114]]
 ```
 
 ### Interesting Weight Patterns
